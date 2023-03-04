@@ -1,5 +1,5 @@
 [package]
-name = "ethabi-derive"
+name = "rethabi-derive"
 description = "Easy to use conversion of ethereum contract calls to bytecode."
 authors = ["Parity Technologies <admin@parity.io>"]
 
@@ -16,7 +16,10 @@ keywords.workspace = true
 proc-macro = true
 
 [dependencies]
-rethabi = { workspace = true, features = ["full-serde"] }
+rethabi = { version = "1.0.0", path = "../rethabi", default-features = false, features = [
+    "std",
+    "full-serde",
+] }
 
 heck = "0.4"
 syn = { version = "1.0.109", default-features = false, features = [

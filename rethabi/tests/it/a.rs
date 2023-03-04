@@ -1,7 +1,7 @@
 macro_rules! use_contract {
     ($module: ident, $path: expr) => {
         mod $module {
-            #[derive(ethabi_derive::EthabiContract)]
+            #[derive(rethabi_derive::EthabiContract)]
             #[ethabi_contract_options(path = $path)]
             struct _Dummy;
         }

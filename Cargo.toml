@@ -2,7 +2,7 @@
 members = ["rethabi", "cli", "derive"]
 
 [workspace.package]
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 rust-version = "1.64"
 license = "MIT OR Apache-2.0"
@@ -13,4 +13,4 @@ categories = ["cryptography::cryptocurrencies"]
 keywords = ["no-std", "ethereum", "eth", "abi", "solidity"]
 
 [workspace.dependencies]
-rethabi = { version = "0.1.0", path = "rethabi", default-features = false }
+rethabi = { version = "1.0.0", path = "rethabi", default-features = false }

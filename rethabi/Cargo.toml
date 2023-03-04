@@ -6,6 +6,7 @@ authors = [
     "Artem Vorotnikov <artem@vorotnikov.me>",
     "Nicholas Rodrigues Lordello <nlordell@gmail.com>",
 ]
+readme = "../README"
 
 version.workspace = true
 edition.workspace = true
@@ -33,7 +34,7 @@ regex = { version = "1.7.1", optional = true }
 once_cell = { version = "1.17.1", optional = true }
 
 [dev-dependencies]
-ethabi-derive = { path = "../derive" }
+rethabi-derive = { path = "../derive" }
 hex-literal = "0.3"
 paste = "1"
 serde_json = "1.0"
