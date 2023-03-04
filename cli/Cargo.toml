@@ -1,9 +1,9 @@
 [package]
 name = "rethabi-cli"
 authors = [
-	"Parity Technologies <admin@parity.io>",
-	"Artem Vorotnikov <artem@vorotnikov.me>",
-	"Nicholas Rodrigues Lordello <nlordell@gmail.com>",
+    "Parity Technologies <admin@parity.io>",
+    "Artem Vorotnikov <artem@vorotnikov.me>",
+    "Nicholas Rodrigues Lordello <nlordell@gmail.com>",
 ]
 description = "Easy to use cli for conversion of ethereum contract calls to bytecode."
 

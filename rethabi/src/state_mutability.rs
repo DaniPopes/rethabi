@@ -5,35 +5,35 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum StateMutability {
-	/// Specified not to read blockchain state
-	#[cfg_attr(feature = "serde", serde(rename = "pure"))]
-	Pure,
-	/// Specified to not modify the blockchain state
-	#[cfg_attr(feature = "serde", serde(rename = "view"))]
-	View,
-	/// Function does not accept Ether - the default
-	#[cfg_attr(feature = "serde", serde(rename = "nonpayable"))]
-	NonPayable,
-	/// Function accepts Ether
-	#[cfg_attr(feature = "serde", serde(rename = "payable"))]
-	Payable,
+    /// Specified not to read blockchain state
+    #[cfg_attr(feature = "serde", serde(rename = "pure"))]
+    Pure,
+    /// Specified to not modify the blockchain state
+    #[cfg_attr(feature = "serde", serde(rename = "view"))]
+    View,
+    /// Function does not accept Ether - the default
+    #[cfg_attr(feature = "serde", serde(rename = "nonpayable"))]
+    NonPayable,
+    /// Function accepts Ether
+    #[cfg_attr(feature = "serde", serde(rename = "payable"))]
+    Payable,
 }
 
 impl Default for StateMutability {
-	fn default() -> Self {
-		Self::NonPayable
-	}
+    fn default() -> Self {
+        Self::NonPayable
+    }
 }
 
 #[cfg(all(test, feature = "serde"))]
 mod test {
-	#[cfg(not(feature = "std"))]
-	use crate::no_std_prelude::*;
-	use crate::{tests::assert_json_eq, StateMutability};
+    #[cfg(not(feature = "std"))]
+    use crate::no_std_prelude::*;
+    use crate::{tests::assert_json_eq, StateMutability};
 
-	#[test]
-	fn state_mutability() {
-		let json = r#"
+    #[test]
+    fn state_mutability() {
+        let json = r#"
 			[
 				"pure",
 				"view",
@@ -42,13 +42,18 @@ mod test {
 			]
 		"#;
 
-		let deserialized: Vec<StateMutability> = serde_json::from_str(json).unwrap();
+        let deserialized: Vec<StateMutability> = serde_json::from_str(json).unwrap();
 
-		assert_eq!(
-			deserialized,
-			vec![StateMutability::Pure, StateMutability::View, StateMutability::NonPayable, StateMutability::Payable,]
-		);
+        assert_eq!(
+            deserialized,
+            vec![
+                StateMutability::Pure,
+                StateMutability::View,
+                StateMutability::NonPayable,
+                StateMutability::Payable,
+            ]
+        );
 
-		assert_json_eq(json, &serde_json::to_string(&deserialized).unwrap());
-	}
+        assert_json_eq(json, &serde_json::to_string(&deserialized).unwrap());
+    }
 }

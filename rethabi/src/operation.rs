@@ -15,36 +15,38 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum Operation {
-	/// Contract constructor.
-	#[serde(rename = "constructor")]
-	Constructor(Constructor),
-	/// Contract function.
-	#[serde(rename = "function")]
-	Function(Function),
-	/// Contract event.
-	#[serde(rename = "event")]
-	Event(Event),
-	/// Contract event.
-	#[serde(rename = "error")]
-	Error(Error),
-	/// Fallback function.
-	#[serde(rename = "fallback")]
-	Fallback,
-	/// Receive function.
-	#[serde(rename = "receive")]
-	Receive,
+    /// Contract constructor.
+    #[serde(rename = "constructor")]
+    Constructor(Constructor),
+    /// Contract function.
+    #[serde(rename = "function")]
+    Function(Function),
+    /// Contract event.
+    #[serde(rename = "event")]
+    Event(Event),
+    /// Contract event.
+    #[serde(rename = "error")]
+    Error(Error),
+    /// Fallback function.
+    #[serde(rename = "fallback")]
+    Fallback,
+    /// Receive function.
+    #[serde(rename = "receive")]
+    Receive,
 }
 
 #[cfg(test)]
 mod tests {
-	use super::Operation;
-	#[cfg(not(feature = "std"))]
-	use crate::no_std_prelude::*;
-	use crate::{tests::assert_ser_de, Event, EventParam, Function, Param, ParamType, StateMutability};
+    use super::Operation;
+    #[cfg(not(feature = "std"))]
+    use crate::no_std_prelude::*;
+    use crate::{
+        tests::assert_ser_de, Event, EventParam, Function, Param, ParamType, StateMutability,
+    };
 
-	#[test]
-	fn operation() {
-		let s = r#"{
+    #[test]
+    fn operation() {
+        let s = r#"{
 			"type":"function",
 			"inputs": [{
 				"name":"a",
@@ -54,24 +56,28 @@ mod tests {
 			"outputs": []
 		}"#;
 
-		let deserialized: Operation = serde_json::from_str(s).unwrap();
+        let deserialized: Operation = serde_json::from_str(s).unwrap();
 
-		#[allow(deprecated)]
-		let function = Function {
-			name: "foo".to_owned(),
-			inputs: vec![Param { name: "a".to_owned(), kind: ParamType::Address, internal_type: None }],
-			outputs: vec![],
-			constant: None,
-			state_mutability: StateMutability::NonPayable,
-		};
-		assert_eq!(deserialized, Operation::Function(function));
+        #[allow(deprecated)]
+        let function = Function {
+            name: "foo".to_owned(),
+            inputs: vec![Param {
+                name: "a".to_owned(),
+                kind: ParamType::Address,
+                internal_type: None,
+            }],
+            outputs: vec![],
+            constant: None,
+            state_mutability: StateMutability::NonPayable,
+        };
+        assert_eq!(deserialized, Operation::Function(function));
 
-		assert_ser_de(&deserialized);
-	}
+        assert_ser_de(&deserialized);
+    }
 
-	#[test]
-	fn event_operation_with_tuple_array_input() {
-		let s = r#"{
+    #[test]
+    fn event_operation_with_tuple_array_input() {
+        let s = r#"{
 			"type":"event",
 			"inputs": [
 				{
@@ -108,36 +114,36 @@ mod tests {
 			"anonymous": false
 		}"#;
 
-		let deserialized: Operation = serde_json::from_str(s).unwrap();
+        let deserialized: Operation = serde_json::from_str(s).unwrap();
 
-		assert_eq!(
-			deserialized,
-			Operation::Event(Event {
-				name: "E".to_owned(),
-				inputs: vec![
-					EventParam { name: "a".to_owned(), kind: ParamType::Address, indexed: true },
-					EventParam {
-						name: "b".to_owned(),
-						kind: ParamType::Array(Box::new(ParamType::Tuple(vec![
-							ParamType::Address,
-							ParamType::Uint(256),
-							ParamType::Bytes
-						]))),
-						indexed: false
-					},
-				],
-				anonymous: false,
-			})
-		);
+        assert_eq!(
+            deserialized,
+            Operation::Event(Event {
+                name: "E".to_owned(),
+                inputs: vec![
+                    EventParam { name: "a".to_owned(), kind: ParamType::Address, indexed: true },
+                    EventParam {
+                        name: "b".to_owned(),
+                        kind: ParamType::Array(Box::new(ParamType::Tuple(vec![
+                            ParamType::Address,
+                            ParamType::Uint(256),
+                            ParamType::Bytes
+                        ]))),
+                        indexed: false
+                    },
+                ],
+                anonymous: false,
+            })
+        );
 
-		assert_ser_de(&deserialized);
-	}
+        assert_ser_de(&deserialized);
+    }
 
-	#[test]
-	fn sanitize_function_name() {
-		fn test_sanitize_function_name(name: &str, expected: &str) {
-			let s = format!(
-				r#"{{
+    #[test]
+    fn sanitize_function_name() {
+        fn test_sanitize_function_name(name: &str, expected: &str) {
+            let s = format!(
+                r#"{{
 					"type":"function",
 					"inputs": [{{
 						"name":"a",
@@ -146,31 +152,31 @@ mod tests {
 					"name":"{}",
 					"outputs": []
 				}}"#,
-				name
-			);
+                name
+            );
 
-			let deserialized: Operation = serde_json::from_str(&s).unwrap();
-			let function = match &deserialized {
-				Operation::Function(f) => f,
-				_ => panic!("expected function"),
-			};
+            let deserialized: Operation = serde_json::from_str(&s).unwrap();
+            let function = match &deserialized {
+                Operation::Function(f) => f,
+                _ => panic!("expected function"),
+            };
 
-			assert_eq!(function.name, expected);
+            assert_eq!(function.name, expected);
 
-			assert_ser_de(&deserialized);
-		}
+            assert_ser_de(&deserialized);
+        }
 
-		test_sanitize_function_name("foo", "foo");
-		test_sanitize_function_name("foo()", "foo");
-		test_sanitize_function_name("()", "");
-		test_sanitize_function_name("", "");
-	}
+        test_sanitize_function_name("foo", "foo");
+        test_sanitize_function_name("foo()", "foo");
+        test_sanitize_function_name("()", "");
+        test_sanitize_function_name("", "");
+    }
 
-	#[test]
-	fn sanitize_event_name() {
-		fn test_sanitize_event_name(name: &str, expected: &str) {
-			let s = format!(
-				r#"{{
+    #[test]
+    fn sanitize_event_name() {
+        fn test_sanitize_event_name(name: &str, expected: &str) {
+            let s = format!(
+                r#"{{
 					"type":"event",
 						"inputs": [{{
 							"name":"a",
@@ -181,23 +187,23 @@ mod tests {
 						"outputs": [],
 						"anonymous": false
 				}}"#,
-				name
-			);
+                name
+            );
 
-			let deserialized: Operation = serde_json::from_str(&s).unwrap();
-			let event = match deserialized {
-				Operation::Event(e) => e,
-				_ => panic!("expected event!"),
-			};
+            let deserialized: Operation = serde_json::from_str(&s).unwrap();
+            let event = match deserialized {
+                Operation::Event(e) => e,
+                _ => panic!("expected event!"),
+            };
 
-			assert_eq!(event.name, expected);
+            assert_eq!(event.name, expected);
 
-			assert_ser_de(&Operation::Event(event));
-		}
+            assert_ser_de(&Operation::Event(event));
+        }
 
-		test_sanitize_event_name("foo", "foo");
-		test_sanitize_event_name("foo()", "foo");
-		test_sanitize_event_name("()", "");
-		test_sanitize_event_name("", "");
-	}
+        test_sanitize_event_name("foo", "foo");
+        test_sanitize_event_name("foo()", "foo");
+        test_sanitize_event_name("()", "");
+        test_sanitize_event_name("", "");
+    }
 }

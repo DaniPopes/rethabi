@@ -34,8 +34,10 @@ fn test_encoding_function_input_as_array() {
     let second = [0x22u8; 20];
 
     let encoded_from_vec = functions::set_validators::encode_input(vec![first, second]);
-    let encoded_from_vec_iter = functions::set_validators::encode_input(vec![first, second].into_iter());
-    let encoded_from_vec_wrapped = functions::set_validators::encode_input(vec![Wrapper(first), Wrapper(second)]);
+    let encoded_from_vec_iter =
+        functions::set_validators::encode_input(vec![first, second].into_iter());
+    let encoded_from_vec_wrapped =
+        functions::set_validators::encode_input(vec![Wrapper(first), Wrapper(second)]);
 
     let expected = "9300c9260000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000200000000000000000000000011111111111111111111111111111111111111110000000000000000000000002222222222222222222222222222222222222222".to_owned();
     assert_eq!(expected, hex::encode(encoded_from_vec));
@@ -86,7 +88,8 @@ fn test_encoding_function_input_as_fixed_array() {
     let second = [0x22u8; 20];
 
     let encoded_from_array = functions::add_two_validators::encode_input([first, second]);
-    let encoded_from_array_wrapped = functions::add_two_validators::encode_input([Wrapper(first), Wrapper(second)]);
+    let encoded_from_array_wrapped =
+        functions::add_two_validators::encode_input([Wrapper(first), Wrapper(second)]);
     let encoded_from_string = functions::set_title::encode_input("foo");
 
     let expected_array = "7de33d2000000000000000000000000011111111111111111111111111111111111111110000000000000000000000002222222222222222222222222222222222222222".to_owned();

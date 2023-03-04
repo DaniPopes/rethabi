@@ -21,36 +21,36 @@ pub type Result<T> = core::result::Result<T, Error>;
 #[cfg_attr(feature = "std", derive(Error))]
 #[derive(Debug)]
 pub enum Error {
-	/// Invalid entity such as a bad function name.
-	#[cfg_attr(feature = "std", error("Invalid name: {0}"))]
-	InvalidName(String),
-	/// Invalid data.
-	#[cfg_attr(feature = "std", error("Invalid data"))]
-	InvalidData,
-	/// Serialization error.
-	#[cfg(feature = "full-serde")]
-	#[error("Serialization error: {0}")]
-	SerdeJson(#[from] serde_json::Error),
-	/// Integer parsing error.
-	#[cfg(feature = "serde")]
-	#[cfg_attr(feature = "std", error("Integer parsing error: {0}"))]
-	ParseInt(#[cfg_attr(feature = "std", from)] num::ParseIntError),
-	/// Hex string parsing error.
-	#[cfg(feature = "serde")]
-	#[cfg_attr(feature = "std", error("Hex parsing error: {0}"))]
-	Hex(#[cfg_attr(feature = "std", from)] hex::FromHexError),
-	/// Other errors.
-	#[cfg_attr(feature = "std", error("{0}"))]
-	Other(Cow<'static, str>),
+    /// Invalid entity such as a bad function name.
+    #[cfg_attr(feature = "std", error("Invalid name: {0}"))]
+    InvalidName(String),
+    /// Invalid data.
+    #[cfg_attr(feature = "std", error("Invalid data"))]
+    InvalidData,
+    /// Serialization error.
+    #[cfg(feature = "full-serde")]
+    #[error("Serialization error: {0}")]
+    SerdeJson(#[from] serde_json::Error),
+    /// Integer parsing error.
+    #[cfg(feature = "serde")]
+    #[cfg_attr(feature = "std", error("Integer parsing error: {0}"))]
+    ParseInt(#[cfg_attr(feature = "std", from)] num::ParseIntError),
+    /// Hex string parsing error.
+    #[cfg(feature = "serde")]
+    #[cfg_attr(feature = "std", error("Hex parsing error: {0}"))]
+    Hex(#[cfg_attr(feature = "std", from)] hex::FromHexError),
+    /// Other errors.
+    #[cfg_attr(feature = "std", error("{0}"))]
+    Other(Cow<'static, str>),
 }
 
 #[cfg(feature = "serde")]
 impl From<uint::FromDecStrErr> for Error {
-	fn from(err: uint::FromDecStrErr) -> Self {
-		use uint::FromDecStrErr::*;
-		match err {
-			InvalidCharacter => Self::Other(Cow::Borrowed("Uint parse error: InvalidCharacter")),
-			InvalidLength => Self::Other(Cow::Borrowed("Uint parse error: InvalidLength")),
-		}
-	}
+    fn from(err: uint::FromDecStrErr) -> Self {
+        use uint::FromDecStrErr::*;
+        match err {
+            InvalidCharacter => Self::Other(Cow::Borrowed("Uint parse error: InvalidCharacter")),
+            InvalidLength => Self::Other(Cow::Borrowed("Uint parse error: InvalidLength")),
+        }
+    }
 }

@@ -19,24 +19,24 @@ use crate::{encode, Bytes, Error, Param, ParamType, Result, Token};
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
 pub struct Constructor {
-	/// Constructor input.
-	pub inputs: Vec<Param>,
+    /// Constructor input.
+    pub inputs: Vec<Param>,
 }
 
 impl Constructor {
-	/// Returns all input params of given constructor.
-	fn param_types(&self) -> Vec<ParamType> {
-		self.inputs.iter().map(|p| p.kind.clone()).collect()
-	}
+    /// Returns all input params of given constructor.
+    fn param_types(&self) -> Vec<ParamType> {
+        self.inputs.iter().map(|p| p.kind.clone()).collect()
+    }
 
-	/// Prepares ABI constructor call with given input params.
-	pub fn encode_input(&self, code: Bytes, tokens: &[Token]) -> Result<Bytes> {
-		let params = self.param_types();
+    /// Prepares ABI constructor call with given input params.
+    pub fn encode_input(&self, code: Bytes, tokens: &[Token]) -> Result<Bytes> {
+        let params = self.param_types();
 
-		if Token::types_check(tokens, &params) {
-			Ok(code.into_iter().chain(encode(tokens)).collect())
-		} else {
-			Err(Error::InvalidData)
-		}
-	}
+        if Token::types_check(tokens, &params) {
+            Ok(code.into_iter().chain(encode(tokens)).collect())
+        } else {
+            Err(Error::InvalidData)
+        }
+    }
 }
