@@ -27,23 +27,9 @@ jobs:
         steps:
             - uses: actions/checkout@v3
             - uses: dtolnay/rust-toolchain@stable
-            - name: Install Anvil
-              uses: foundry-rs/foundry-toolchain@v1
-              with:
-                  version: nightly
-            - name: Install test binaries
-              shell: bash
-              run: ./.github/scripts/install_test_binaries.sh
-            - name: Install nextest
-              uses: taiki-e/install-action@nextest
             - uses: Swatinem/rust-cache@v2
             - name: test ${{ matrix.flags.flags }}
-              shell: bash
-              # skip `ethers_etherscan::it` and `ethers::live`
-              run: |
-                  cargo nextest run \
-                  ${{ matrix.flags.flags }} \
-                  -E "!binary(~live) & !(deps(ethers-etherscan) & kind(test))"
+              run: cargo test ${{ matrix.flags.flags }}
 
     feature-checks:
         name: feature checks
