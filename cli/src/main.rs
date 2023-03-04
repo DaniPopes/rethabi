@@ -35,7 +35,7 @@ enum Encode {
     Params {
         /// Pairs of types directly followed by params in the form:
         ///
-        /// -v <type1> <param1> -v <type2> <param2> ...
+        /// `-v <type1> <param1> -v <type2> <param2> ...`
         #[structopt(
             short = "v",
             name = "type-or-param",

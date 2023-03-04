@@ -24,12 +24,12 @@ pub enum Token {
     /// Address.
     ///
     /// solidity name: address
-    /// Encoded to left padded [0u8; 32].
+    /// Encoded to left padded `[0u8; 32]`.
     Address(Address),
     /// Vector of bytes with known size.
     ///
     /// solidity name eg.: bytes8, bytes32, bytes64, bytes1024
-    /// Encoded to right padded [0u8; ((N + 31) / 32) * 32].
+    /// Encoded to right padded `[0u8; ((N + 31) / 32) * 32]`.
     FixedBytes(FixedBytes),
     /// Vector of bytes of unknown size.
     ///
@@ -49,7 +49,7 @@ pub enum Token {
     /// Boolean value.
     ///
     /// solidity name: bool
-    /// Encoded as left padded [0u8; 32], where last bit represents boolean value.
+    /// Encoded as left padded `[0u8; 32]`, where last bit represents boolean value.
     Bool(bool),
     /// String.
     ///
@@ -58,12 +58,12 @@ pub enum Token {
     String(String),
     /// Array with known size.
     ///
-    /// solidity name eg.: int[3], bool[3], address[][8]
+    /// solidity name eg.: `int[3]`, `bool[3]`, `address[][8]`
     /// Encoding of array is equal to encoding of consecutive elements of array.
     FixedArray(Vec<Token>),
     /// Array of params with unknown size.
     ///
-    /// solidity name eg. int[], bool[], address[5][]
+    /// solidity name eg. `int[]`, `bool[]`, `address[5][]`
     Array(Vec<Token>),
     /// Tuple of params of variable types.
     ///
