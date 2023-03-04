@@ -1,2 +1,15 @@
 [workspace]
-members = ["rethabi", "cli", "derive", "tests"]
+members = ["rethabi", "cli", "derive"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.64"
+license = "MIT OR Apache-2.0"
+documentation = "https://docs.rs/rethabi"
+repository = "https://github.com/gakonst/ethers-rs"
+homepage = "https://github.com/danipopes/rethabi"
+keywords = ["ethereum", "eth", "abi", "solidity"]
+
+[workspace.dependencies]
+rethabi = { version = "0.1.0", path = "rethabi", default-features = false }

@@ -1,20 +1,24 @@
 [package]
 name = "rethabi-cli"
-version = "18.0.0"
 authors = [
-    "Parity Technologies <admin@parity.io>",
-    "Artem Vorotnikov <artem@vorotnikov.me>",
-    "Nicholas Rodrigues Lordello <nlordell@gmail.com>",
+	"Parity Technologies <admin@parity.io>",
+	"Artem Vorotnikov <artem@vorotnikov.me>",
+	"Nicholas Rodrigues Lordello <nlordell@gmail.com>",
 ]
-homepage = "https://github.com/rust-ethereum/rethabi"
-keywords = ["ethereum", "eth", "abi", "solidity", "cli"]
 description = "Easy to use cli for conversion of ethereum contract calls to bytecode."
-license = "Apache-2.0"
-edition = "2021"
+
+version.workspace = true
+edition.workspace = true
+rust.version.workspace = true
+license.workspace = true
+documentation.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
 
 [dependencies]
+rethabi.workspace = true
 anyhow = "1"
-rethabi = { version = "18.0.0", path = "../rethabi" }
 hex = "0.4"
 sha3 = "0.10"
 structopt = "0.3"
