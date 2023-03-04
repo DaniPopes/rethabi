@@ -306,7 +306,10 @@ mod tests {
         let result = execute(command);
         assert!(result.is_err());
         let err = result.unwrap_err();
-        assert_eq!(err.to_string(), "Uint parse error: InvalidCharacter");
+        assert_eq!(
+            err.to_string(),
+            "Uint parse error: InvalidLength: digit 10 is out of range for base 10"
+        );
     }
 
     #[test]
