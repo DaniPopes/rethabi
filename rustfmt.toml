@@ -1,4 +1,10 @@
-hard_tabs = true
-max_width = 120
+max_width = 100
 use_small_heuristics = "Max"
-edition = "2021"
+use_field_init_shorthand = true
+
+# unstable - require nightly rustfmt
+imports_granularity = "Crate"
+wrap_comments = true
+comment_width = 100
+
+# See more keys and their definitions at https://rust-lang.github.io/rustfmt
