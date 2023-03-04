@@ -18,8 +18,8 @@ pub struct Contract {
 	events: Vec<Event>,
 }
 
-impl<'a> From<&'a ethabi::Contract> for Contract {
-	fn from(c: &'a ethabi::Contract) -> Self {
+impl<'a> From<&'a rethabi::Contract> for Contract {
+	fn from(c: &'a rethabi::Contract) -> Self {
 		Contract {
 			constructor: c.constructor.as_ref().map(Into::into),
 			functions: c.functions().map(Into::into).collect(),
@@ -36,7 +36,7 @@ impl Contract {
 		let events: Vec<_> = self.events.iter().map(Event::generate_event).collect();
 		let logs: Vec<_> = self.events.iter().map(Event::generate_log).collect();
 		quote! {
-			use ethabi;
+			use rethabi;
 			const INTERNAL_ERR: &'static str = "`ethabi_derive` internal error";
 
 			#constructor
@@ -56,7 +56,7 @@ impl Contract {
 			/// Contract's logs.
 			pub mod logs {
 				use super::INTERNAL_ERR;
-				use ethabi;
+				use rethabi;
 				#(#logs)*
 			}
 		}
@@ -71,7 +71,7 @@ mod test {
 
 	#[test]
 	fn test_no_body() {
-		let ethabi_contract = ethabi::Contract {
+		let ethabi_contract = rethabi::Contract {
 			constructor: None,
 			functions: Default::default(),
 			events: Default::default(),
@@ -83,7 +83,7 @@ mod test {
 		let c = Contract::from(&ethabi_contract);
 
 		let expected = quote! {
-			use ethabi;
+			use rethabi;
 			const INTERNAL_ERR: &'static str = "`ethabi_derive` internal error";
 
 			/// Contract's functions.
@@ -99,7 +99,7 @@ mod test {
 			/// Contract's logs.
 			pub mod logs {
 				use super::INTERNAL_ERR;
-				use ethabi;
+				use rethabi;
 			}
 		};
 

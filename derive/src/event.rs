@@ -25,8 +25,8 @@ pub struct Event {
 	anonymous: bool,
 }
 
-impl<'a> From<&'a ethabi::Event> for Event {
-	fn from(e: &'a ethabi::Event) -> Self {
+impl<'a> From<&'a rethabi::Event> for Event {
+	fn from(e: &'a rethabi::Event) -> Self {
 		let names: Vec<_> = e
 			.inputs
 			.iter()
@@ -76,7 +76,7 @@ impl<'a> From<&'a ethabi::Event> for Event {
 		let filter_declarations: Vec<_> = topic_kinds
 			.iter()
 			.zip(template_names.iter())
-			.map(|(kind, template_name)| quote! { #template_name: Into<ethabi::Topic<#kind>> })
+			.map(|(kind, template_name)| quote! { #template_name: Into<rethabi::Topic<#kind>> })
 			.collect();
 
 		let filter_definitions: Vec<_> = topic_names
@@ -86,7 +86,8 @@ impl<'a> From<&'a ethabi::Event> for Event {
 			.collect();
 
 		// The number of parameters that creates a filter which matches anything.
-		let wildcard_filter_params: Vec<_> = filter_definitions.iter().map(|_| quote! { ethabi::Topic::Any }).collect();
+		let wildcard_filter_params: Vec<_> =
+			filter_definitions.iter().map(|_| quote! { rethabi::Topic::Any }).collect();
 
 		let filter_init: Vec<_> = topic_names
 			.iter()
@@ -110,7 +111,7 @@ impl<'a> From<&'a ethabi::Event> for Event {
 				let indexed = x.indexed;
 
 				quote! {
-					ethabi::EventParam {
+					rethabi::EventParam {
 						name: #name.to_owned(),
 						kind: #kind,
 						indexed: #indexed
@@ -163,19 +164,19 @@ impl Event {
 
 		quote! {
 			pub mod #name {
-				use ethabi;
+				use rethabi;
 				use super::INTERNAL_ERR;
 
-				pub fn event() -> ethabi::Event {
-					ethabi::Event {
+				pub fn event() -> rethabi::Event {
+					rethabi::Event {
 						name: #name_as_string.into(),
 						inputs: #recreate_inputs_quote,
 						anonymous: #anonymous,
 					}
 				}
 
-				pub fn filter<#(#filter_declarations),*>(#(#filter_definitions),*) -> ethabi::TopicFilter {
-					let raw = ethabi::RawTopicFilter {
+				pub fn filter<#(#filter_declarations),*>(#(#filter_definitions),*) -> rethabi::TopicFilter {
+					let raw = rethabi::RawTopicFilter {
 						#(#filter_init)*
 						..Default::default()
 					};
@@ -184,11 +185,11 @@ impl Event {
 					e.filter(raw).expect(INTERNAL_ERR)
 				}
 
-				pub fn wildcard_filter() -> ethabi::TopicFilter {
+				pub fn wildcard_filter() -> rethabi::TopicFilter {
 					filter(#(#wildcard_filter_params),*)
 				}
 
-				pub fn parse_log(log: ethabi::RawLog) -> ethabi::Result<super::super::logs::#camel_name> {
+				pub fn parse_log(log: rethabi::RawLog) -> rethabi::Result<super::super::logs::#camel_name> {
 					let e = event();
 					let mut log = e.parse_log(log)?.params.into_iter();
 					let result = super::super::logs::#camel_name {
@@ -208,7 +209,7 @@ mod tests {
 
 	#[test]
 	fn test_empty_log() {
-		let ethabi_event = ethabi::Event { name: "hello".into(), inputs: vec![], anonymous: false };
+		let ethabi_event = rethabi::Event { name: "hello".into(), inputs: vec![], anonymous: false };
 
 		let e = Event::from(&ethabi_event);
 
@@ -222,25 +223,25 @@ mod tests {
 
 	#[test]
 	fn test_empty_event() {
-		let ethabi_event = ethabi::Event { name: "hello".into(), inputs: vec![], anonymous: false };
+		let ethabi_event = rethabi::Event { name: "hello".into(), inputs: vec![], anonymous: false };
 
 		let e = Event::from(&ethabi_event);
 
 		let expected = quote! {
 			pub mod hello {
-				use ethabi;
+				use rethabi;
 				use super::INTERNAL_ERR;
 
-				pub fn event() -> ethabi::Event {
-					ethabi::Event {
+				pub fn event() -> rethabi::Event {
+					rethabi::Event {
 						name: "Hello".into(),
 						inputs: vec![],
 						anonymous: false,
 					}
 				}
 
-				pub fn filter<>() -> ethabi::TopicFilter {
-					let raw = ethabi::RawTopicFilter {
+				pub fn filter<>() -> rethabi::TopicFilter {
+					let raw = rethabi::RawTopicFilter {
 						..Default::default()
 					};
 
@@ -248,11 +249,11 @@ mod tests {
 					e.filter(raw).expect(INTERNAL_ERR)
 				}
 
-				pub fn wildcard_filter() -> ethabi::TopicFilter {
+				pub fn wildcard_filter() -> rethabi::TopicFilter {
 					filter()
 				}
 
-				pub fn parse_log(log: ethabi::RawLog) -> ethabi::Result<super::super::logs::Hello> {
+				pub fn parse_log(log: rethabi::RawLog) -> rethabi::Result<super::super::logs::Hello> {
 					let e = event();
 					let mut log = e.parse_log(log)?.params.into_iter();
 					let result = super::super::logs::Hello {};
@@ -266,9 +267,9 @@ mod tests {
 
 	#[test]
 	fn test_event_with_one_input() {
-		let ethabi_event = ethabi::Event {
+		let ethabi_event = rethabi::Event {
 			name: "one".into(),
-			inputs: vec![ethabi::EventParam { name: "foo".into(), kind: ethabi::ParamType::Address, indexed: true }],
+			inputs: vec![rethabi::EventParam { name: "foo".into(), kind: rethabi::ParamType::Address, indexed: true }],
 			anonymous: false,
 		};
 
@@ -276,24 +277,24 @@ mod tests {
 
 		let expected = quote! {
 			pub mod one {
-				use ethabi;
+				use rethabi;
 				use super::INTERNAL_ERR;
 
-				pub fn event() -> ethabi::Event {
-					ethabi::Event {
+				pub fn event() -> rethabi::Event {
+					rethabi::Event {
 						name: "One".into(),
-						inputs: vec![ethabi::EventParam {
+						inputs: vec![rethabi::EventParam {
 							name: "foo".to_owned(),
-							kind: ethabi::ParamType::Address,
+							kind: rethabi::ParamType::Address,
 							indexed: true
 						}],
 						anonymous: false,
 					}
 				}
 
-				pub fn filter<T0: Into<ethabi::Topic<ethabi::Address>>>(foo: T0) -> ethabi::TopicFilter {
-					let raw = ethabi::RawTopicFilter {
-						topic0: foo.into().map(|i| ethabi::Token::Address(i)),
+				pub fn filter<T0: Into<rethabi::Topic<rethabi::Address>>>(foo: T0) -> rethabi::TopicFilter {
+					let raw = rethabi::RawTopicFilter {
+						topic0: foo.into().map(|i| rethabi::Token::Address(i)),
 						..Default::default()
 					};
 
@@ -301,11 +302,11 @@ mod tests {
 					e.filter(raw).expect(INTERNAL_ERR)
 				}
 
-				pub fn wildcard_filter() -> ethabi::TopicFilter {
-					filter(ethabi::Topic::Any)
+				pub fn wildcard_filter() -> rethabi::TopicFilter {
+					filter(rethabi::Topic::Any)
 				}
 
-				pub fn parse_log(log: ethabi::RawLog) -> ethabi::Result<super::super::logs::One> {
+				pub fn parse_log(log: rethabi::RawLog) -> rethabi::Result<super::super::logs::One> {
 					let e = event();
 					let mut log = e.parse_log(log)?.params.into_iter();
 					let result = super::super::logs::One {
@@ -321,9 +322,9 @@ mod tests {
 
 	#[test]
 	fn test_log_with_one_field() {
-		let ethabi_event = ethabi::Event {
+		let ethabi_event = rethabi::Event {
 			name: "one".into(),
-			inputs: vec![ethabi::EventParam { name: "foo".into(), kind: ethabi::ParamType::Address, indexed: false }],
+			inputs: vec![rethabi::EventParam { name: "foo".into(), kind: rethabi::ParamType::Address, indexed: false }],
 			anonymous: false,
 		};
 
@@ -332,7 +333,7 @@ mod tests {
 		let expected = quote! {
 			#[derive(Debug, Clone, PartialEq, Eq)]
 			pub struct One {
-				pub foo: ethabi::Address
+				pub foo: rethabi::Address
 			}
 		};
 
@@ -341,16 +342,16 @@ mod tests {
 
 	#[test]
 	fn test_log_with_multiple_field() {
-		let ethabi_event = ethabi::Event {
+		let ethabi_event = rethabi::Event {
 			name: "many".into(),
 			inputs: vec![
-				ethabi::EventParam { name: "foo".into(), kind: ethabi::ParamType::Address, indexed: false },
-				ethabi::EventParam {
+				rethabi::EventParam { name: "foo".into(), kind: rethabi::ParamType::Address, indexed: false },
+				rethabi::EventParam {
 					name: "bar".into(),
-					kind: ethabi::ParamType::Array(Box::new(ethabi::ParamType::String)),
+					kind: rethabi::ParamType::Array(Box::new(rethabi::ParamType::String)),
 					indexed: false,
 				},
-				ethabi::EventParam { name: "xyz".into(), kind: ethabi::ParamType::Uint(256), indexed: false },
+				rethabi::EventParam { name: "xyz".into(), kind: rethabi::ParamType::Uint(256), indexed: false },
 			],
 			anonymous: false,
 		};
@@ -360,9 +361,9 @@ mod tests {
 		let expected = quote! {
 			#[derive(Debug, Clone, PartialEq, Eq)]
 			pub struct Many {
-				pub foo: ethabi::Address,
+				pub foo: rethabi::Address,
 				pub bar: Vec<String>,
-				pub xyz: ethabi::Uint
+				pub xyz: rethabi::Uint
 			}
 		};
 

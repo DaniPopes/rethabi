@@ -159,7 +159,7 @@ impl Reader {
 				let len = s[5..].parse().map_err(Error::ParseInt)?;
 				ParamType::FixedBytes(len)
 			}
-			// As discussed in https://github.com/rust-ethereum/ethabi/issues/254,
+			// As discussed in https://github.com/rust-ethereum/rethabi/issues/254,
 			// any type that does not fit the above corresponds to a Solidity
 			// `enum`, and as a result we treat it as a `uint8`. This is a unique
 			// case which occurs in libraries with exported (`public`) Solidity

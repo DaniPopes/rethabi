@@ -21,8 +21,8 @@ pub struct Constructor {
 	recreate_inputs: TokenStream,
 }
 
-impl<'a> From<&'a ethabi::Constructor> for Constructor {
-	fn from(c: &'a ethabi::Constructor) -> Self {
+impl<'a> From<&'a rethabi::Constructor> for Constructor {
+	fn from(c: &'a rethabi::Constructor) -> Self {
 		// [param0, hello_world, param2]
 		let input_names = input_names(&c.inputs);
 
@@ -42,7 +42,7 @@ impl<'a> From<&'a ethabi::Constructor> for Constructor {
 			.zip(template_names.iter())
 			.map(|(param_name, template_name)| quote! { #param_name: #template_name });
 
-		let inputs_definitions = Some(quote! { code: ethabi::Bytes }).into_iter().chain(inputs_definitions).collect();
+		let inputs_definitions = Some(quote! { code: rethabi::Bytes }).into_iter().chain(inputs_definitions).collect();
 
 		// [Token::Uint(param0.into()), Token::Bytes(hello_world.into()), Token::Array(param2.into_iter().map(Into::into).collect())]
 		let tokenize: Vec<_> = input_names
@@ -70,8 +70,8 @@ impl Constructor {
 
 		quote! {
 			/// Encodes a call to contract's constructor.
-			pub fn constructor<#(#declarations),*>(#(#definitions),*) -> ethabi::Bytes {
-				let c = ethabi::Constructor {
+			pub fn constructor<#(#declarations),*>(#(#definitions),*) -> rethabi::Bytes {
+				let c = rethabi::Constructor {
 					inputs: #recreate_inputs,
 				};
 				let tokens = vec![#(#tokenize),*];
@@ -88,14 +88,14 @@ mod tests {
 
 	#[test]
 	fn test_no_params() {
-		let ethabi_constructor = ethabi::Constructor { inputs: vec![] };
+		let ethabi_constructor = rethabi::Constructor { inputs: vec![] };
 
 		let c = Constructor::from(&ethabi_constructor);
 
 		let expected = quote! {
 			/// Encodes a call to contract's constructor.
-			pub fn constructor<>(code: ethabi::Bytes) -> ethabi::Bytes {
-				let c = ethabi::Constructor {
+			pub fn constructor<>(code: rethabi::Bytes) -> rethabi::Bytes {
+				let c = rethabi::Constructor {
 					inputs: vec![],
 				};
 				let tokens = vec![];
@@ -108,23 +108,27 @@ mod tests {
 
 	#[test]
 	fn test_one_param() {
-		let ethabi_constructor = ethabi::Constructor {
-			inputs: vec![ethabi::Param { name: "foo".into(), kind: ethabi::ParamType::Uint(256), internal_type: None }],
+		let ethabi_constructor = rethabi::Constructor {
+			inputs: vec![rethabi::Param {
+				name: "foo".into(),
+				kind: rethabi::ParamType::Uint(256),
+				internal_type: None,
+			}],
 		};
 
 		let c = Constructor::from(&ethabi_constructor);
 
 		let expected = quote! {
 			/// Encodes a call to contract's constructor.
-			pub fn constructor<T0: Into<ethabi::Uint> >(code: ethabi::Bytes, foo: T0) -> ethabi::Bytes {
-				let c = ethabi::Constructor {
-					inputs: vec![ethabi::Param {
+			pub fn constructor<T0: Into<rethabi::Uint> >(code: rethabi::Bytes, foo: T0) -> rethabi::Bytes {
+				let c = rethabi::Constructor {
+					inputs: vec![rethabi::Param {
 						name: "foo".to_owned(),
-						kind: ethabi::ParamType::Uint(256usize),
+						kind: rethabi::ParamType::Uint(256usize),
 						internal_type: None
 					}],
 				};
-				let tokens = vec![ethabi::Token::Uint(foo.into())];
+				let tokens = vec![rethabi::Token::Uint(foo.into())];
 				c.encode_input(code, &tokens).expect(INTERNAL_ERR)
 			}
 		};

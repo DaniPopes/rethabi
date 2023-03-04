@@ -2,8 +2,8 @@
 
 set -exu
 
-VERSION=$(grep "^version" ./ethabi/Cargo.toml | sed -e 's/.*"\(.*\)"/\1/')
-ORDER=(ethabi derive contract cli)
+VERSION=$(grep "^version" ./rethabi/Cargo.toml | sed -e 's/.*"\(.*\)"/\1/')
+ORDER=(rethabi derive contract cli)
 
 echo "Publishing $VERSION"
 cargo clean

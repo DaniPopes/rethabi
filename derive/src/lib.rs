@@ -15,10 +15,10 @@ mod contract;
 mod event;
 mod function;
 
-use ethabi::{Contract, Error, Param, ParamType, Result};
 use heck::ToSnakeCase;
 use proc_macro2::Span;
 use quote::quote;
+use rethabi::{Contract, Error, Param, ParamType, Result};
 use std::{borrow::Cow, env, fs, path::PathBuf};
 
 const ERROR_MSG: &str = "`derive(EthabiContract)` failed";
@@ -83,25 +83,25 @@ fn normalize_path(relative_path: &str) -> Result<PathBuf> {
 	Ok(path)
 }
 
-fn to_syntax_string(param_type: &ethabi::ParamType) -> proc_macro2::TokenStream {
+fn to_syntax_string(param_type: &rethabi::ParamType) -> proc_macro2::TokenStream {
 	match *param_type {
-		ParamType::Address => quote! { ethabi::ParamType::Address },
-		ParamType::Bytes => quote! { ethabi::ParamType::Bytes },
-		ParamType::Int(x) => quote! { ethabi::ParamType::Int(#x) },
-		ParamType::Uint(x) => quote! { ethabi::ParamType::Uint(#x) },
-		ParamType::Bool => quote! { ethabi::ParamType::Bool },
-		ParamType::String => quote! { ethabi::ParamType::String },
+		ParamType::Address => quote! { rethabi::ParamType::Address },
+		ParamType::Bytes => quote! { rethabi::ParamType::Bytes },
+		ParamType::Int(x) => quote! { rethabi::ParamType::Int(#x) },
+		ParamType::Uint(x) => quote! { rethabi::ParamType::Uint(#x) },
+		ParamType::Bool => quote! { rethabi::ParamType::Bool },
+		ParamType::String => quote! { rethabi::ParamType::String },
 		ParamType::Array(ref param_type) => {
 			let param_type_quote = to_syntax_string(param_type);
-			quote! { ethabi::ParamType::Array(Box::new(#param_type_quote)) }
+			quote! { rethabi::ParamType::Array(Box::new(#param_type_quote)) }
 		}
-		ParamType::FixedBytes(x) => quote! { ethabi::ParamType::FixedBytes(#x) },
+		ParamType::FixedBytes(x) => quote! { rethabi::ParamType::FixedBytes(#x) },
 		ParamType::FixedArray(ref param_type, ref x) => {
 			let param_type_quote = to_syntax_string(param_type);
-			quote! { ethabi::ParamType::FixedArray(Box::new(#param_type_quote), #x) }
+			quote! { rethabi::ParamType::FixedArray(Box::new(#param_type_quote), #x) }
 		}
 		ParamType::Tuple(_) => {
-			unimplemented!("Tuples are not supported. https://github.com/openethereum/ethabi/issues/175")
+			unimplemented!("Tuples are not supported. https://github.com/openethereum/rethabi/issues/175")
 		}
 	}
 }
@@ -116,7 +116,7 @@ where
 			let name = &x.name;
 			let kind = to_syntax_string(&x.kind);
 			quote! {
-				ethabi::Param {
+				rethabi::Param {
 					name: #name.to_owned(),
 					kind: #kind,
 					internal_type: None
@@ -130,12 +130,12 @@ where
 
 fn rust_type(input: &ParamType) -> proc_macro2::TokenStream {
 	match *input {
-		ParamType::Address => quote! { ethabi::Address },
-		ParamType::Bytes => quote! { ethabi::Bytes },
-		ParamType::FixedBytes(32) => quote! { ethabi::Hash },
+		ParamType::Address => quote! { rethabi::Address },
+		ParamType::Bytes => quote! { rethabi::Bytes },
+		ParamType::FixedBytes(32) => quote! { rethabi::Hash },
 		ParamType::FixedBytes(size) => quote! { [u8; #size] },
-		ParamType::Int(_) => quote! { ethabi::Int },
-		ParamType::Uint(_) => quote! { ethabi::Uint },
+		ParamType::Int(_) => quote! { rethabi::Int },
+		ParamType::Uint(_) => quote! { rethabi::Uint },
 		ParamType::Bool => quote! { bool },
 		ParamType::String => quote! { String },
 		ParamType::Array(ref kind) => {
@@ -147,7 +147,7 @@ fn rust_type(input: &ParamType) -> proc_macro2::TokenStream {
 			quote! { [#t, #size] }
 		}
 		ParamType::Tuple(_) => {
-			unimplemented!("Tuples are not supported. https://github.com/openethereum/ethabi/issues/175")
+			unimplemented!("Tuples are not supported. https://github.com/openethereum/rethabi/issues/175")
 		}
 	}
 }
@@ -156,12 +156,12 @@ fn template_param_type(input: &ParamType, index: usize) -> proc_macro2::TokenStr
 	let t_ident = syn::Ident::new(&format!("T{index}"), Span::call_site());
 	let u_ident = syn::Ident::new(&format!("U{index}"), Span::call_site());
 	match *input {
-		ParamType::Address => quote! { #t_ident: Into<ethabi::Address> },
-		ParamType::Bytes => quote! { #t_ident: Into<ethabi::Bytes> },
-		ParamType::FixedBytes(32) => quote! { #t_ident: Into<ethabi::Hash> },
+		ParamType::Address => quote! { #t_ident: Into<rethabi::Address> },
+		ParamType::Bytes => quote! { #t_ident: Into<rethabi::Bytes> },
+		ParamType::FixedBytes(32) => quote! { #t_ident: Into<rethabi::Hash> },
 		ParamType::FixedBytes(size) => quote! { #t_ident: Into<[u8; #size]> },
-		ParamType::Int(_) => quote! { #t_ident: Into<ethabi::Int> },
-		ParamType::Uint(_) => quote! { #t_ident: Into<ethabi::Uint> },
+		ParamType::Int(_) => quote! { #t_ident: Into<rethabi::Int> },
+		ParamType::Uint(_) => quote! { #t_ident: Into<rethabi::Uint> },
 		ParamType::Bool => quote! { #t_ident: Into<bool> },
 		ParamType::String => quote! { #t_ident: Into<String> },
 		ParamType::Array(ref kind) => {
@@ -177,7 +177,7 @@ fn template_param_type(input: &ParamType, index: usize) -> proc_macro2::TokenStr
 			}
 		}
 		ParamType::Tuple(_) => {
-			unimplemented!("Tuples are not supported. https://github.com/openethereum/ethabi/issues/175")
+			unimplemented!("Tuples are not supported. https://github.com/openethereum/rethabi/issues/175")
 		}
 	}
 }
@@ -194,13 +194,13 @@ fn from_template_param(input: &ParamType, name: &syn::Ident) -> proc_macro2::Tok
 
 fn to_token(name: &proc_macro2::TokenStream, kind: &ParamType) -> proc_macro2::TokenStream {
 	match *kind {
-		ParamType::Address => quote! { ethabi::Token::Address(#name) },
-		ParamType::Bytes => quote! { ethabi::Token::Bytes(#name) },
-		ParamType::FixedBytes(_) => quote! { ethabi::Token::FixedBytes(#name.as_ref().to_vec()) },
-		ParamType::Int(_) => quote! { ethabi::Token::Int(#name) },
-		ParamType::Uint(_) => quote! { ethabi::Token::Uint(#name) },
-		ParamType::Bool => quote! { ethabi::Token::Bool(#name) },
-		ParamType::String => quote! { ethabi::Token::String(#name) },
+		ParamType::Address => quote! { rethabi::Token::Address(#name) },
+		ParamType::Bytes => quote! { rethabi::Token::Bytes(#name) },
+		ParamType::FixedBytes(_) => quote! { rethabi::Token::FixedBytes(#name.as_ref().to_vec()) },
+		ParamType::Int(_) => quote! { rethabi::Token::Int(#name) },
+		ParamType::Uint(_) => quote! { rethabi::Token::Uint(#name) },
+		ParamType::Bool => quote! { rethabi::Token::Bool(#name) },
+		ParamType::String => quote! { rethabi::Token::String(#name) },
 		ParamType::Array(ref kind) => {
 			let inner_name = quote! { inner };
 			let inner_loop = to_token(&inner_name, kind);
@@ -208,7 +208,7 @@ fn to_token(name: &proc_macro2::TokenStream, kind: &ParamType) -> proc_macro2::T
 				// note the double {{
 				{
 					let v = #name.into_iter().map(|#inner_name| #inner_loop).collect();
-					ethabi::Token::Array(v)
+					rethabi::Token::Array(v)
 				}
 			}
 		}
@@ -219,12 +219,12 @@ fn to_token(name: &proc_macro2::TokenStream, kind: &ParamType) -> proc_macro2::T
 				// note the double {{
 				{
 					let v = #name.into_iter().map(|#inner_name| #inner_loop).collect();
-					ethabi::Token::FixedArray(v)
+					rethabi::Token::FixedArray(v)
 				}
 			}
 		}
 		ParamType::Tuple(_) => {
-			unimplemented!("Tuples are not supported. https://github.com/openethereum/ethabi/issues/175")
+			unimplemented!("Tuples are not supported. https://github.com/openethereum/rethabi/issues/175")
 		}
 	}
 }
@@ -238,7 +238,7 @@ fn from_token(kind: &ParamType, token: &proc_macro2::TokenStream) -> proc_macro2
 				let mut result = [0u8; 32];
 				let v = #token.into_fixed_bytes().expect(INTERNAL_ERR);
 				result.copy_from_slice(&v);
-				ethabi::Hash::from(result)
+				rethabi::Hash::from(result)
 			}
 		},
 		ParamType::FixedBytes(size) => {
@@ -278,7 +278,7 @@ fn from_token(kind: &ParamType, token: &proc_macro2::TokenStream) -> proc_macro2
 			}
 		}
 		ParamType::Tuple(_) => {
-			unimplemented!("Tuples are not supported. https://github.com/openethereum/ethabi/issues/175")
+			unimplemented!("Tuples are not supported. https://github.com/openethereum/rethabi/issues/175")
 		}
 	}
 }

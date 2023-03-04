@@ -16,8 +16,8 @@ use_contract!(test_rust_keywords, "../res/test_rust_keywords.abi");
 #[cfg(test)]
 mod tests {
 	use crate::{eip20, validators};
-	use ethabi::{Address, Uint};
 	use hex_literal::hex;
+	use rethabi::{Address, Uint};
 
 	struct Wrapper([u8; 20]);
 
