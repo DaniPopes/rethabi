@@ -2,9 +2,9 @@
 name = "rethabi"
 description = "Easy to use conversion of ethereum contract calls to bytecode"
 authors = [
-	"Parity Technologies <admin@parity.io>",
-	"Artem Vorotnikov <artem@vorotnikov.me>",
-	"Nicholas Rodrigues Lordello <nlordell@gmail.com>",
+    "Parity Technologies <admin@parity.io>",
+    "Artem Vorotnikov <artem@vorotnikov.me>",
+    "Nicholas Rodrigues Lordello <nlordell@gmail.com>",
 ]
 
 version.workspace = true
@@ -17,13 +17,18 @@ homepage.workspace = true
 keywords.workspace = true
 
 [dependencies]
+revm-primitives = { version = "1.0.0", default-features = false }
 hex = { version = "0.4", default-features = false, features = ["alloc"] }
-serde = { version = "1.0", optional = true, default-features = false, features = ["derive"] }
-serde_json = { version = "1.0", optional = true }
 sha3 = { version = "0.10", default-features = false }
-ethereum-types = { version = "0.14.1", default-features = false }
+
+# std
 thiserror = { version = "1", optional = true }
-uint = { version = "0.9.5", default-features = false, optional = true }
+
+# serde
+serde = { version = "1.0", optional = true, default-features = false, features = ["derive"] }
+
+# full-serde
+serde_json = { version = "1.0", optional = true }
 regex = { version = "1.7.1", optional = true }
 once_cell = { version = "1.17.1", optional = true }
 
@@ -34,14 +39,10 @@ paste = "1"
 serde_json = "1.0"
 
 [features]
-default = ["std", "full-serde", "rlp"]
-std = ["hex/std", "sha3/std", "ethereum-types/std", "thiserror", "uint?/std", "serde?/std"]
+default = ["std"]
+std = ["revm-primitives/std", "hex/std", "sha3/std", "thiserror", "serde?/std"]
 
-serde = ["dep:serde", "ethereum-types/serialize", "uint"]
+serde = ["dep:serde", "revm-primitives/serde"]
 
 # To enable custom `Reader`/`Tokenizer` and `serde` features support
 full-serde = ["std", "serde", "serde_json", "regex", "once_cell"]
-
-rlp = ["ethereum-types/rlp"]
-
-parity-codec = ["ethereum-types/codec"]

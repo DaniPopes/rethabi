@@ -9,6 +9,12 @@
 //! Utils used by different modules.
 
 use crate::Word;
+use revm_primitives::U256;
+
+#[inline(always)]
+pub fn array_to_u256(array: [u8; 32]) -> U256 {
+    U256::from_be_bytes(array)
+}
 
 /// Converts a u32 to a right aligned array of 32 bytes.
 pub fn pad_u32(value: u32) -> Word {

@@ -58,7 +58,7 @@ fn test_decoding_function_output() {
 
     // then
 
-    let expected_output: Uint = 0x36455b.into();
+    let expected_output = Uint::from(0x36455b);
     assert_eq!(expected_output, decoded_output);
 }
 

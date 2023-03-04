@@ -173,8 +173,8 @@ fn encode_token_append(data: &mut Vec<Word>, token: &Token) {
         Token::Bytes(ref bytes) => pad_bytes_append(data, bytes),
         Token::String(ref s) => pad_bytes_append(data, s.as_bytes()),
         Token::FixedBytes(ref bytes) => fixed_bytes_append(data, bytes),
-        Token::Int(int) => data.push(int.into()),
-        Token::Uint(uint) => data.push(uint.into()),
+        Token::Int(int) => data.push(int.to_be_bytes()),
+        Token::Uint(uint) => data.push(uint.to_be_bytes()),
         Token::Bool(b) => {
             let mut value = [0u8; 32];
             if b {
@@ -192,7 +192,7 @@ mod tests {
 
     #[cfg(not(feature = "std"))]
     use crate::no_std_prelude::*;
-    use crate::{encode, util::pad_u32, Token};
+    use crate::{encode, util::pad_u32, Token, Uint, Uint as RUint};
 
     #[test]
     fn encode_address() {
@@ -379,13 +379,13 @@ mod tests {
     #[test]
     fn encode_fixed_array_of_static_tuples_followed_by_dynamic_type() {
         let tuple1 = Token::Tuple(vec![
-            Token::Uint(93523141.into()),
-            Token::Uint(352332135.into()),
+            Token::Uint(Uint::from(93523141)),
+            Token::Uint(Uint::from(352332135)),
             Token::Address([0x44u8; 20].into()),
         ]);
         let tuple2 = Token::Tuple(vec![
-            Token::Uint(12411.into()),
-            Token::Uint(451.into()),
+            Token::Uint(Uint::from(12411)),
+            Token::Uint(Uint::from(451)),
             Token::Address([0x22u8; 20].into()),
         ]);
         let fixed = Token::FixedArray(vec![tuple1, tuple2]);
@@ -550,7 +550,7 @@ mod tests {
     fn encode_uint() {
         let mut uint = [0u8; 32];
         uint[31] = 4;
-        let encoded = encode(&[Token::Uint(uint.into())]);
+        let encoded = encode(&[Token::Uint(Uint::from_be_bytes(uint))]);
         let expected = hex!("0000000000000000000000000000000000000000000000000000000000000004");
         assert_eq!(encoded, expected);
     }
@@ -559,7 +559,7 @@ mod tests {
     fn encode_int() {
         let mut int = [0u8; 32];
         int[31] = 4;
-        let encoded = encode(&[Token::Int(int.into())]);
+        let encoded = encode(&[Token::Int(Uint::from_be_bytes(int))]);
         let expected = hex!("0000000000000000000000000000000000000000000000000000000000000004");
         assert_eq!(encoded, expected);
     }
@@ -588,9 +588,9 @@ mod tests {
         )
         .to_vec();
         let encoded = encode(&[
-            Token::Int(5.into()),
+            Token::Int(Uint::from(5)),
             Token::Bytes(bytes.clone()),
-            Token::Int(3.into()),
+            Token::Int(Uint::from(3)),
             Token::Bytes(bytes),
         ]);
 
@@ -622,12 +622,16 @@ mod tests {
     #[test]
     fn comprehensive_test2() {
         let encoded = encode(&vec![
-            Token::Int(1.into()),
+            Token::Int(Uint::from(1)),
             Token::String("gavofyork".to_owned()),
-            Token::Int(2.into()),
-            Token::Int(3.into()),
-            Token::Int(4.into()),
-            Token::Array(vec![Token::Int(5.into()), Token::Int(6.into()), Token::Int(7.into())]),
+            Token::Int(Uint::from(2)),
+            Token::Int(Uint::from(3)),
+            Token::Int(Uint::from(4)),
+            Token::Array(vec![
+                Token::Int(Uint::from(5)),
+                Token::Int(Uint::from(6)),
+                Token::Int(Uint::from(7)),
+            ]),
         ]);
 
         let expected = hex!(
@@ -766,7 +770,7 @@ mod tests {
 
     #[test]
     fn encode_complex_tuple() {
-        let uint = Token::Uint([0x11u8; 32].into());
+        let uint = Token::Uint(Uint::from_be_bytes([0x11u8; 32]));
         let string = Token::String("gavofyork".to_owned());
         let address1 = Token::Address([0x11u8; 20].into());
         let address2 = Token::Address([0x22u8; 20].into());
@@ -890,8 +894,8 @@ mod tests {
         let token = {
             use crate::Token::*;
             Tuple(vec![
-                Tuple(vec![Tuple(vec![Bool(false), Uint(0x777.into())])]),
-                Array(vec![Uint(0x42.into()), Uint(0x1337.into())]),
+                Tuple(vec![Tuple(vec![Bool(false), Uint(RUint::from(0x777))])]),
+                Array(vec![Uint(RUint::from(0x42)), Uint(RUint::from(0x1337))]),
             ])
         };
         let encoded = encode(&[token]);

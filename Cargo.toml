@@ -7,9 +7,10 @@ edition = "2021"
 rust-version = "1.64"
 license = "MIT OR Apache-2.0"
 documentation = "https://docs.rs/rethabi"
-repository = "https://github.com/gakonst/ethers-rs"
+repository = "https://github.com/danipopes/rethabi"
 homepage = "https://github.com/danipopes/rethabi"
-keywords = ["ethereum", "eth", "abi", "solidity"]
+categories = ["cryptography::cryptocurrencies"]
+keywords = ["no-std", "ethereum", "eth", "abi", "solidity"]
 
 [workspace.dependencies]
 rethabi = { version = "0.1.0", path = "rethabi", default-features = false }

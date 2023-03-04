@@ -50,7 +50,7 @@ impl<'a> From<&'a rethabi::Constructor> for Constructor {
         let inputs_definitions =
             Some(quote! { code: rethabi::Bytes }).into_iter().chain(inputs_definitions).collect();
 
-        // [Token::Uint(param0.into()), Token::Bytes(hello_world.into()),
+        // [Token::Uint(Uint::from(param0)), Token::Bytes(hello_world.into()),
         // Token::Array(param2.into_iter().map(Into::into).collect())]
         let tokenize: Vec<_> = input_names
             .iter()
@@ -137,7 +137,7 @@ mod tests {
                         internal_type: None
                     }],
                 };
-                let tokens = vec![rethabi::Token::Uint(foo.into())];
+                let tokens = vec![rethabi::Token::Uint(Uint::from(foo))];
                 c.encode_input(code, &tokens).expect(INTERNAL_ERR)
             }
         };

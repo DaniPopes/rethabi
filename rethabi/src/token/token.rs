@@ -245,7 +245,7 @@ impl Token {
 mod tests {
     #[cfg(not(feature = "std"))]
     use crate::no_std_prelude::*;
-    use crate::{ParamType, Token};
+    use crate::{ParamType, Token, Uint};
 
     #[test]
     fn test_type_check() {
@@ -258,24 +258,24 @@ mod tests {
         }
 
         assert_type_check(
-            vec![Token::Uint(0.into()), Token::Bool(false)],
+            vec![Token::Uint(Uint::from(0)), Token::Bool(false)],
             vec![ParamType::Uint(256), ParamType::Bool],
         );
         assert_type_check(
-            vec![Token::Uint(0.into()), Token::Bool(false)],
+            vec![Token::Uint(Uint::from(0)), Token::Bool(false)],
             vec![ParamType::Uint(32), ParamType::Bool],
         );
 
         assert_not_type_check(
-            vec![Token::Uint(0.into())],
+            vec![Token::Uint(Uint::from(0))],
             vec![ParamType::Uint(32), ParamType::Bool],
         );
         assert_not_type_check(
-            vec![Token::Uint(0.into()), Token::Bool(false)],
+            vec![Token::Uint(Uint::from(0)), Token::Bool(false)],
             vec![ParamType::Uint(32)],
         );
         assert_not_type_check(
-            vec![Token::Bool(false), Token::Uint(0.into())],
+            vec![Token::Bool(false), Token::Uint(Uint::from(0))],
             vec![ParamType::Uint(32), ParamType::Bool],
         );
 
@@ -294,7 +294,7 @@ mod tests {
             vec![ParamType::Array(Box::new(ParamType::Bool))],
         );
         assert_not_type_check(
-            vec![Token::Array(vec![Token::Bool(false), Token::Uint(0.into())])],
+            vec![Token::Array(vec![Token::Bool(false), Token::Uint(Uint::from(0))])],
             vec![ParamType::Array(Box::new(ParamType::Bool))],
         );
         assert_not_type_check(
@@ -311,7 +311,7 @@ mod tests {
             vec![ParamType::FixedArray(Box::new(ParamType::Bool), 3)],
         );
         assert_not_type_check(
-            vec![Token::FixedArray(vec![Token::Bool(false), Token::Uint(0.into())])],
+            vec![Token::FixedArray(vec![Token::Bool(false), Token::Uint(Uint::from(0))])],
             vec![ParamType::FixedArray(Box::new(ParamType::Bool), 2)],
         );
         assert_not_type_check(
@@ -326,12 +326,12 @@ mod tests {
             .is_dynamic());
         assert!(Token::Bytes(vec![0, 0, 0, 0]).is_dynamic());
         assert!(!Token::FixedBytes(vec![0, 0, 0, 0]).is_dynamic());
-        assert!(!Token::Uint(0.into()).is_dynamic());
-        assert!(!Token::Int(0.into()).is_dynamic());
+        assert!(!Token::Uint(Uint::from(0)).is_dynamic());
+        assert!(!Token::Int(Uint::from(0)).is_dynamic());
         assert!(!Token::Bool(false).is_dynamic());
         assert!(Token::String("".into()).is_dynamic());
         assert!(Token::Array(vec![Token::Bool(false)]).is_dynamic());
-        assert!(!Token::FixedArray(vec![Token::Uint(0.into())]).is_dynamic());
+        assert!(!Token::FixedArray(vec![Token::Uint(Uint::from(0))]).is_dynamic());
         assert!(Token::FixedArray(vec![Token::String("".into())]).is_dynamic());
         assert!(Token::FixedArray(vec![Token::Array(vec![Token::Bool(false)])]).is_dynamic());
     }

@@ -34,7 +34,7 @@ struct Inputs {
     /// Collects template params into vector.
     ///
     /// ```text
-    /// [Token::Uint(param0.into()), Token::Bytes(hello_world.into()), Token::Array(param2.into_iter().map(Into::into).collect())]
+    /// [Token::Uint(Uint::from(param0)), Token::Bytes(hello_world.into()), Token::Array(param2.into_iter().map(Into::into).collect())]
     /// ```
     tokenize: Vec<TokenStream>,
     /// Template params.
@@ -97,7 +97,7 @@ impl<'a> From<&'a rethabi::Function> for Function {
             .map(|(declaration, definition)| TemplateParam { declaration, definition })
             .collect();
 
-        // [Token::Uint(param0.into()), Token::Bytes(hello_world.into()),
+        // [Token::Uint(Uint::from(param0)), Token::Bytes(hello_world.into()),
         // Token::Array(param2.into_iter().map(Into::into).collect())]
         let tokenize: Vec<_> = input_names
             .iter()

@@ -27,7 +27,7 @@ use crate::no_std_prelude::*;
 use core::cmp::Ordering::{Equal, Less};
 
 #[cfg(feature = "serde")]
-use crate::{Error, ParamType};
+use crate::{util::array_to_u256, Error, ParamType};
 
 /// This trait should be used to parse string values as tokens.
 #[cfg(feature = "serde")]
@@ -46,8 +46,8 @@ pub trait Tokenizer {
                 Self::tokenize_fixed_bytes(value.strip_prefix("0x").unwrap_or(value), len)
                     .map(Token::FixedBytes)
             }
-            ParamType::Uint(_) => Self::tokenize_uint(value).map(Into::into).map(Token::Uint),
-            ParamType::Int(_) => Self::tokenize_int(value).map(Into::into).map(Token::Int),
+            ParamType::Uint(_) => Self::tokenize_uint(value).map(array_to_u256).map(Token::Uint),
+            ParamType::Int(_) => Self::tokenize_int(value).map(array_to_u256).map(Token::Int),
             ParamType::Array(ref p) => Self::tokenize_array(value, p).map(Token::Array),
             ParamType::FixedArray(ref p, len) => {
                 Self::tokenize_fixed_array(value, p, len).map(Token::FixedArray)
@@ -287,7 +287,7 @@ pub trait Tokenizer {
 #[cfg(all(test, feature = "full-serde"))]
 mod test {
     use super::{LenientTokenizer, ParamType, Tokenizer};
-    use crate::Token;
+    use crate::{Token, Uint};
 
     #[test]
     fn single_quoted_in_array_must_error() {
@@ -352,7 +352,7 @@ mod test {
                 Token::Array(vec![Token::Tuple(vec![Token::Address(
                     "0x5c9d55b78febcc2061715ba4f57ecf8ea2711f2c".parse().unwrap(),
                 ),])]),
-                Token::Uint(2u64.into()),
+                Token::Uint(Uint::from(2u64)),
             ]
         );
     }

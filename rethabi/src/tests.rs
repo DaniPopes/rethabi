@@ -17,7 +17,7 @@ use serde_json::Value;
 
 #[cfg(not(feature = "std"))]
 use crate::no_std_prelude::*;
-use crate::{decode, encode, ParamType, Token};
+use crate::{decode, encode, ParamType, Token, Uint};
 
 #[cfg(feature = "serde")]
 pub(crate) fn assert_json_eq(left: &str, right: &str) {
@@ -133,7 +133,7 @@ test_encode_decode! {
 test_encode_decode! {
     name: int,
     types: [ParamType::Int(32)],
-    tokens: [Token::Int([0x11u8; 32].into())],
+    tokens: [Token::Int(Uint::from_be_bytes([0x11u8; 32]))],
     data: "1111111111111111111111111111111111111111111111111111111111111111"
 }
 test_encode_decode! {
@@ -142,7 +142,7 @@ test_encode_decode! {
     tokens: {
         let mut int = [0u8; 32];
         int[31] = 4;
-        [Token::Int(int.into())]
+        [Token::Int(Uint::from_be_bytes(int))]
     },
     data: "0000000000000000000000000000000000000000000000000000000000000004"
 }
@@ -151,7 +151,7 @@ test_encode_decode! {
 test_encode_decode! {
     name: uint,
     types: [ParamType::Uint(32)],
-    tokens: [Token::Uint([0x11u8; 32].into())],
+    tokens: [Token::Uint(Uint::from_be_bytes([0x11u8; 32]))],
     data: "1111111111111111111111111111111111111111111111111111111111111111"
 }
 test_encode_decode! {
@@ -160,7 +160,7 @@ test_encode_decode! {
     tokens: {
         let mut uint = [0u8; 32];
         uint[31] = 4;
-        [Token::Uint(uint.into())]
+        [Token::Uint(Uint::from_be_bytes(uint))]
     },
     data: "0000000000000000000000000000000000000000000000000000000000000004"
 }
@@ -578,15 +578,15 @@ test_encode_decode! {
                     Token::Array(vec![
                         Token::Tuple(vec![
                             Token::Address([0x11u8; 20].into()),
-                            Token::Uint([0x11u8; 32].into()),
+                            Token::Uint(Uint::from_be_bytes([0x11u8; 32])),
                         ]),
                         Token::Tuple(vec![
                             Token::Address([0x22u8; 20].into()),
-                            Token::Uint([0x22u8; 32].into()),
+                            Token::Uint(Uint::from_be_bytes([0x22u8; 32])),
                         ]),
                         Token::Tuple(vec![
                             Token::Address([0x33u8; 20].into()),
-                            Token::Uint([0x44u8; 32].into()),
+                            Token::Uint(Uint::from_be_bytes([0x44u8; 32])),
                         ])
                     ])
                 ]
@@ -621,9 +621,9 @@ test_encode_decode! {
 			131a3afc00d1b1e3461b955e53fc866dcf303b3eb9f4c16f89e388930f48134b
 		").to_vec();
         [
-            Token::Int(5.into()),
+            Token::Int(Uint::from(5)),
             Token::Bytes(bytes.clone()),
-            Token::Int(3.into()),
+            Token::Int(Uint::from(3)),
             Token::Bytes(bytes),
         ]
     },
@@ -650,15 +650,15 @@ test_encode_decode! {
         ParamType::Array(Box::new(ParamType::Int(32))),
     ],
     tokens: [
-        Token::Int(1.into()),
+        Token::Int(Uint::from(1)),
         Token::String("gavofyork".to_owned()),
-        Token::Int(2.into()),
-        Token::Int(3.into()),
-        Token::Int(4.into()),
+        Token::Int(Uint::from(2)),
+        Token::Int(Uint::from(3)),
+        Token::Int(Uint::from(4)),
         Token::Array(vec![
-            Token::Int(5.into()),
-            Token::Int(6.into()),
-            Token::Int(7.into()),
+            Token::Int(Uint::from(5)),
+            Token::Int(Uint::from(6)),
+            Token::Int(Uint::from(7)),
         ])
     ],
     data: "

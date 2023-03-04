@@ -10,7 +10,7 @@
 
 #[cfg(not(feature = "std"))]
 use crate::no_std_prelude::*;
-use crate::{Error, ParamType, Token, Word};
+use crate::{util::array_to_u256, Error, ParamType, Token, Word};
 
 #[derive(Debug)]
 struct DecodeResult {
@@ -139,12 +139,14 @@ fn decode_param(
         }
         ParamType::Int(_) => {
             let slice = peek_32_bytes(data, offset)?;
-            let result = DecodeResult { token: Token::Int(slice.into()), new_offset: offset + 32 };
+            let result =
+                DecodeResult { token: Token::Int(array_to_u256(slice)), new_offset: offset + 32 };
             Ok(result)
         }
         ParamType::Uint(_) => {
             let slice = peek_32_bytes(data, offset)?;
-            let result = DecodeResult { token: Token::Uint(slice.into()), new_offset: offset + 32 };
+            let result =
+                DecodeResult { token: Token::Uint(array_to_u256(slice)), new_offset: offset + 32 };
             Ok(result)
         }
         ParamType::Bool => {
@@ -303,7 +305,7 @@ mod tests {
         );
         let address1 = Token::Address([0x11u8; 20].into());
         let address2 = Token::Address([0x22u8; 20].into());
-        let uint = Token::Uint([0x11u8; 32].into());
+        let uint = Token::Uint(Uint::from_be_bytes([0x11u8; 32]));
         let tuple = Token::Tuple(vec![address1, address2, uint]);
         let expected = vec![tuple];
         let decoded = decode(
@@ -406,7 +408,7 @@ mod tests {
 			6761766f66796f726b0000000000000000000000000000000000000000000000
 		"
         );
-        let uint = Token::Uint([0x11u8; 32].into());
+        let uint = Token::Uint(Uint::from_be_bytes([0x11u8; 32]));
         let string = Token::String("gavofyork".to_owned());
         let address1 = Token::Address([0x11u8; 20].into());
         let address2 = Token::Address([0x22u8; 20].into());

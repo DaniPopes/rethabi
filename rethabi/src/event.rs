@@ -158,7 +158,7 @@ impl Event {
             .collect::<Vec<ParamType>>();
 
         let flat_topics =
-            topics.into_iter().skip(to_skip).flat_map(|t| t.as_ref().to_vec()).collect::<Vec<u8>>();
+            topics.into_iter().skip(to_skip).flat_map(|t| t.0.to_vec()).collect::<Vec<u8>>();
 
         let topic_tokens = decode(&topic_types, &flat_topics)?;
 
@@ -213,7 +213,7 @@ mod tests {
         log::{Log, RawLog},
         signature::long_signature,
         token::Token,
-        Event, EventParam, LogParam, ParamType,
+        Event, EventParam, LogParam, ParamType, Uint,
     };
 
     #[test]
@@ -276,21 +276,15 @@ mod tests {
                 params: [
                     (
                         "a",
-                        Token::Int(
-                            hex!(
-                                "0000000000000000000000000000000000000000000000000000000000000003"
-                            )
-                            .into()
-                        ),
+                        Token::Int(Uint::from_be_bytes(hex!(
+                            "0000000000000000000000000000000000000000000000000000000000000003"
+                        ))),
                     ),
                     (
                         "b",
-                        Token::Int(
-                            hex!(
-                                "0000000000000000000000000000000000000000000000000000000000000002"
-                            )
-                            .into()
-                        ),
+                        Token::Int(Uint::from_be_bytes(hex!(
+                            "0000000000000000000000000000000000000000000000000000000000000002"
+                        ))),
                     ),
                     ("c", Token::Address(hex!("2222222222222222222222222222222222222222").into())),
                     ("d", Token::Address(hex!("1111111111111111111111111111111111111111").into())),

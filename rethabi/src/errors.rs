@@ -45,12 +45,15 @@ pub enum Error {
 }
 
 #[cfg(feature = "serde")]
-impl From<uint::FromDecStrErr> for Error {
-    fn from(err: uint::FromDecStrErr) -> Self {
-        use uint::FromDecStrErr::*;
+impl From<revm_primitives::ruint::ParseError> for Error {
+    fn from(err: revm_primitives::ruint::ParseError) -> Self {
+        use revm_primitives::ruint::ParseError::*;
         match err {
-            InvalidCharacter => Self::Other(Cow::Borrowed("Uint parse error: InvalidCharacter")),
-            InvalidLength => Self::Other(Cow::Borrowed("Uint parse error: InvalidLength")),
+            e @ InvalidDigit(c) => Self::Other(Cow::Owned(format!("Uint parse error: {e}: {c}"))),
+            e @ InvalidRadix(r) => Self::Other(Cow::Owned(format!("Uint parse error: {e}: {r}"))),
+            BaseConvertError(e) => {
+                Self::Other(Cow::Owned(format!("Uint parse error: InvalidLength: {e}")))
+            }
         }
     }
 }

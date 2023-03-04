@@ -16,7 +16,7 @@ keywords.workspace = true
 proc-macro = true
 
 [dependencies]
-rethabi.workspace = true
+rethabi = { workspace = true, features = ["full-serde"] }
 
 heck = "0.4"
 syn = { version = "1.0.109", default-features = false, features = [

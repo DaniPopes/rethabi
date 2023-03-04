@@ -52,7 +52,7 @@ impl Tokenizer for LenientTokenizer {
         // Tries to parse it as is first. If it fails, tries to check for
         // expectable units with the following format: 'Number[Spaces]Unit'.
         //   If regex fails, then the original FromDecStrErr should take priority
-        let uint = match Uint::from_dec_str(value) {
+        let uint = match Uint::from_str_radix(value, 10) {
             Ok(_uint) => _uint,
             Err(dec_error) => {
                 let original_dec_error = dec_error.to_string();
@@ -74,8 +74,8 @@ impl Tokenizer for LenientTokenizer {
                             _ => return Err(dec_error.into()),
                         });
 
-                        let integer =
-                            Uint::from_dec_str(integer)?.checked_mul(Uint::from(10u32).pow(units));
+                        let integer = Uint::from_str_radix(integer, 10)?
+                            .checked_mul(Uint::from(10u32).pow(units));
 
                         if fract.is_empty() {
                             integer.ok_or(dec_error)?
@@ -84,7 +84,7 @@ impl Tokenizer for LenientTokenizer {
                             let fract_pow =
                                 units.checked_sub(Uint::from(fract.len())).ok_or(dec_error)?;
 
-                            let fract = Uint::from_dec_str(fract)?
+                            let fract = Uint::from_str_radix(fract, 10)?
                                 .checked_mul(Uint::from(10u32).pow(fract_pow))
                                 .ok_or_else(|| {
                                     Error::Other(Cow::Owned(original_dec_error.clone()))
@@ -100,7 +100,7 @@ impl Tokenizer for LenientTokenizer {
             }
         };
 
-        Ok(uint.into())
+        Ok(uint.to_be_bytes())
     }
 
     // We don't have a proper signed int 256-bit long type, so here we're cheating. We build a U256
@@ -112,31 +112,28 @@ impl Tokenizer for LenientTokenizer {
             return result;
         }
 
-        let abs = Uint::from_dec_str(value.trim_start_matches('-'))?;
-        let max = Uint::max_value() / 2;
+        let abs = Uint::from_str_radix(value.trim_start_matches('-'), 10)?;
+        let max = Uint::MAX / Uint::from(2u64);
         let int = if value.starts_with('-') {
-            if abs.is_zero() {
-                return Ok(abs.into());
-            } else if abs > max + 1 {
+            if abs == Uint::ZERO {
+                return Ok(abs.to_be_bytes());
+            } else if abs > max + Uint::from(1u64) {
                 return Err(Error::Other(Cow::Borrowed("int256 parse error: Underflow")));
             }
-            !abs + 1 // two's complement
+            !abs + Uint::from(1u64) // two's complement
         } else {
             if abs > max {
                 return Err(Error::Other(Cow::Borrowed("int256 parse error: Overflow")));
             }
             abs
         };
-        Ok(int.into())
+        Ok(int.to_be_bytes())
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use ethereum_types::FromDecStrErr;
-
     use crate::{
-        errors::Error,
         token::{LenientTokenizer, Token, Tokenizer},
         ParamType, Uint,
     };
@@ -149,7 +146,7 @@ mod tests {
                 "1111111111111111111111111111111111111111111111111111111111111111"
             )
             .unwrap(),
-            Token::Uint([0x11u8; 32].into())
+            Token::Uint(Uint::from_be_bytes([0x11u8; 32]))
         );
     }
 
@@ -170,22 +167,22 @@ mod tests {
     fn tokenize_uint_gwei() {
         assert_eq!(
             LenientTokenizer::tokenize(&ParamType::Uint(256), "1nano").unwrap(),
-            Token::Uint(Uint::from_dec_str("1000000000").unwrap())
+            Token::Uint(Uint::from_str_radix("1000000000", 10).unwrap())
         );
 
         assert_eq!(
             LenientTokenizer::tokenize(&ParamType::Uint(256), "1nanoether").unwrap(),
-            Token::Uint(Uint::from_dec_str("1000000000").unwrap())
+            Token::Uint(Uint::from_str_radix("1000000000", 10).unwrap())
         );
 
         assert_eq!(
             LenientTokenizer::tokenize(&ParamType::Uint(256), "1gwei").unwrap(),
-            Token::Uint(Uint::from_dec_str("1000000000").unwrap())
+            Token::Uint(Uint::from_str_radix("1000000000", 10).unwrap())
         );
 
         assert_eq!(
             LenientTokenizer::tokenize(&ParamType::Uint(256), "0.1 gwei").unwrap(),
-            Token::Uint(Uint::from_dec_str("100000000").unwrap())
+            Token::Uint(Uint::from_str_radix("100000000", 10).unwrap())
         );
     }
 
@@ -193,22 +190,22 @@ mod tests {
     fn tokenize_uint_ether() {
         assert_eq!(
             LenientTokenizer::tokenize(&ParamType::Uint(256), "10000000000ether").unwrap(),
-            Token::Uint(Uint::from_dec_str("10000000000000000000000000000").unwrap())
+            Token::Uint(Uint::from_str_radix("10000000000000000000000000000", 10).unwrap())
         );
 
         assert_eq!(
             LenientTokenizer::tokenize(&ParamType::Uint(256), "1ether").unwrap(),
-            Token::Uint(Uint::from_dec_str("1000000000000000000").unwrap())
+            Token::Uint(Uint::from_str_radix("1000000000000000000", 10).unwrap())
         );
 
         assert_eq!(
             LenientTokenizer::tokenize(&ParamType::Uint(256), "0.01 ether").unwrap(),
-            Token::Uint(Uint::from_dec_str("10000000000000000").unwrap())
+            Token::Uint(Uint::from_str_radix("10000000000000000", 10).unwrap())
         );
 
         assert_eq!(
             LenientTokenizer::tokenize(&ParamType::Uint(256), "0.000000000000000001ether").unwrap(),
-            Token::Uint(Uint::from_dec_str("1").unwrap())
+            Token::Uint(Uint::from_str_radix("1", 10).unwrap())
         );
 
         assert_eq!(
@@ -226,87 +223,52 @@ mod tests {
             )
             .unwrap(),
             Token::Array(vec![
-                Token::Uint(Uint::from_dec_str("1000000000000000000").unwrap()),
-                Token::Uint(Uint::from_dec_str("100000000000000000").unwrap())
+                Token::Uint(Uint::from_str_radix("1000000000000000000", 10).unwrap()),
+                Token::Uint(Uint::from_str_radix("100000000000000000", 10).unwrap())
             ])
         );
     }
 
     #[test]
     fn tokenize_uint_invalid_units() {
-        let _error = Error::from(FromDecStrErr::InvalidCharacter);
+        // TODO: assert_eq with
+        // `Err(Error::from(revm_primitives::ruint::ParseError::InvalidDigit(_)))`
 
-        assert!(matches!(
-            LenientTokenizer::tokenize(&ParamType::Uint(256), "0.1 wei"),
-            Err(_error)
-        ));
+        assert!(LenientTokenizer::tokenize(&ParamType::Uint(256), "0.1 wei").is_err());
 
         // 0.1 wei
-        assert!(matches!(
-            LenientTokenizer::tokenize(&ParamType::Uint(256), "0.0000000000000000001ether"),
-            Err(_error)
-        ));
+        assert!(LenientTokenizer::tokenize(&ParamType::Uint(256), "0.0000000000000000001ether")
+            .is_err());
 
         // 1 ether + 0.1 wei
-        assert!(matches!(
-            LenientTokenizer::tokenize(&ParamType::Uint(256), "1.0000000000000000001ether"),
-            Err(_error)
-        ));
+        assert!(LenientTokenizer::tokenize(&ParamType::Uint(256), "1.0000000000000000001ether")
+            .is_err());
 
         // 1_000_000_000 ether + 0.1 wei
-        assert!(matches!(
-            LenientTokenizer::tokenize(
-                &ParamType::Uint(256),
-                "1000000000.0000000000000000001ether"
-            ),
-            Err(_error)
-        ));
+        assert!(LenientTokenizer::tokenize(
+            &ParamType::Uint(256),
+            "1000000000.0000000000000000001ether"
+        )
+        .is_err());
 
-        assert!(matches!(
-            LenientTokenizer::tokenize(&ParamType::Uint(256), "0..1 gwei"),
-            Err(_error)
-        ));
+        assert!(LenientTokenizer::tokenize(&ParamType::Uint(256), "0..1 gwei").is_err());
 
-        assert!(matches!(
-            LenientTokenizer::tokenize(&ParamType::Uint(256), "..1 gwei"),
-            Err(_error)
-        ));
+        assert!(LenientTokenizer::tokenize(&ParamType::Uint(256), "..1 gwei").is_err());
 
-        assert!(matches!(
-            LenientTokenizer::tokenize(&ParamType::Uint(256), "1. gwei"),
-            Err(_error)
-        ));
+        assert!(LenientTokenizer::tokenize(&ParamType::Uint(256), "1. gwei").is_err());
 
-        assert!(matches!(
-            LenientTokenizer::tokenize(&ParamType::Uint(256), ".1 gwei"),
-            Err(_error)
-        ));
+        assert!(LenientTokenizer::tokenize(&ParamType::Uint(256), ".1 gwei").is_err());
 
-        assert!(matches!(
-            LenientTokenizer::tokenize(&ParamType::Uint(256), "2.1.1 gwei"),
-            Err(_error)
-        ));
+        assert!(LenientTokenizer::tokenize(&ParamType::Uint(256), "2.1.1 gwei").is_err());
 
-        assert!(matches!(
-            LenientTokenizer::tokenize(&ParamType::Uint(256), ".1.1 gwei"),
-            Err(_error)
-        ));
+        assert!(LenientTokenizer::tokenize(&ParamType::Uint(256), ".1.1 gwei").is_err());
 
-        assert!(matches!(LenientTokenizer::tokenize(&ParamType::Uint(256), "1abc"), Err(_error)));
+        assert!(LenientTokenizer::tokenize(&ParamType::Uint(256), "1abc").is_err());
 
-        assert!(matches!(
-            LenientTokenizer::tokenize(&ParamType::Uint(256), "1 gwei "),
-            Err(_error)
-        ));
+        assert!(LenientTokenizer::tokenize(&ParamType::Uint(256), "1 gwei ").is_err());
 
-        assert!(matches!(
-            LenientTokenizer::tokenize(&ParamType::Uint(256), "g 1 gwei"),
-            Err(_error)
-        ));
+        assert!(LenientTokenizer::tokenize(&ParamType::Uint(256), "g 1 gwei").is_err());
 
-        assert!(matches!(
-            LenientTokenizer::tokenize(&ParamType::Uint(256), "1gwei 1 gwei"),
-            Err(_error)
-        ));
+        assert!(LenientTokenizer::tokenize(&ParamType::Uint(256), "1gwei 1 gwei").is_err());
     }
 }
